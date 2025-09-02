@@ -299,8 +299,8 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <div class="sim-section" id="sim-hero">
   <div class="sim-header">
     <div>
-      <h3 style="margin:0">discrete vs continuous</h3>
-      <p style="margin:6px 0 0;" class="small">See arrivals (dots) on a single cycle bar (downtime â†’ uptime). Toggle discrete/continuous and tune <em>D</em>, <em>&Delta;</em>. Theoretical and empirical means update live.</p>
+      <h3 style="margin:0">Hero visualizer â€” discrete vs continuous</h3>
+      <p style="margin:6px 0 0;" class="small">See arrivals (dots) on a single cycle bar (downtime â†’ uptime). Toggle discrete/continuous and tune <em>D</em>, <em>&Delta;</em>. Theoretical and empirical means update live. Math: continuous \(E[W]=\frac{D^2}{2(D+U)}\), discrete bias \(=\frac{D\Delta}{2(D+U)}\).</p>
     </div>
     <div class="legend">
       <span class="dot" style="background:#f44"></span><span class="small">Waiting</span>
@@ -346,12 +346,13 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
       <div><strong id="hero-count">0</strong></div>
     </div>
   </div>
-</div><!-- ===================== JavaScript for the sims ===================== -->
+</div>
+
+<!-- JS for hero visualizer -->
 <script>
 (function(){
   /* ---------- Helpers ---------- */
   function randPoisson(lambda) {
-    // Knuth's algorithm: suitable for small lambda. For larger lambda, use approximation.
     let L = Math.exp(-lambda);
     let k = 0;
     let p = 1;
@@ -362,21 +363,15 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     return k - 1;
   }
 
-  function samplePoissonPoints(lambda, T) {
-    // For efficiency: sample N ~ Poisson(lambda*T), then N uniform times in [0,T)
-    const mean = lambda * T;
-    // For moderate mean, use direct Poisson; else approximate by normal. We'll use Poisson for mean <= 1e5 (fine)
-    const N = randPoisson(mean);
-    const arr = new Array(N);
-    for (let i=0;i<N;i++) arr[i] = Math.random()*T;
-    return arr;
-  }
-
   /* ---------- SIM 1: Hero visualizer ---------- */
   const hero = {
-    X: 30, Delta: 1, canvas: document.getElementById('hero-canvas'),
+    X: 30,
+    Delta: 1,
+    canvas: document.getElementById('hero-canvas'),
     ctx: document.getElementById('hero-canvas').getContext('2d'),
-    mode: 'continuous', arrivals: [], empMean: null
+    mode: 'continuous',
+    arrivals: [],
+    empMean: null
   };
   const heroX = document.getElementById('hero-X'), heroXv = document.getElementById('hero-Xv');
   const heroD = document.getElementById('hero-D'), heroDv = document.getElementById('hero-Dv');
@@ -396,37 +391,37 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
   function heroDraw() {
     const c = hero.ctx, w = hero.canvas.width, h = hero.canvas.height;
     c.clearRect(0,0,w,h);
-    // bar
     const padding = 24;
     const barW = w - padding*2;
     const barH = 44;
     const y = 40;
-    // downtime gray (left half)
+    // downtime & uptime boxes
     c.fillStyle = '#eef3f8'; c.fillRect(padding, y, barW/2, barH);
-    c.fillStyle = '#e6fff7'; c.fillRect(padding+barW/2, y, barW/2, barH); // uptime
+    c.fillStyle = '#e6fff7'; c.fillRect(padding+barW/2, y, barW/2, barH);
     c.strokeStyle = '#cfe'; c.strokeRect(padding, y, barW, barH);
     c.fillStyle = '#234'; c.font = '14px system-ui';
     c.fillText('Downtime', padding + barW/4 - 24, y + barH/2 + 5);
     c.fillText('Uptime', padding + 3*barW/4 - 12, y + barH/2 + 5);
 
     // draw slots if discrete or either mode
-    if (hero.mode!=='continuous') {
-      const D = hero.X, U = hero.X, total = D+U, slot = hero.Delta;
-      const m = Math.round(D/slot);
-      const slotPx = (barW/2)/Math.max(1,m);
+    if (hero.mode !== 'continuous') {
+      const D = hero.X, slot = Math.max(0.0001, hero.Delta);
+      // ensure at least 1 slot; use floor for stable behavior
+      const m = Math.max(1, Math.floor(D / slot));
+      const slotPx = (barW/2)/m;
       c.fillStyle = 'rgba(0,0,0,0.03)';
       for (let i=0;i<m;i++){
+        const x = padding + i*slotPx + Math.round(slotPx) - 1;
         c.fillRect(padding + i*slotPx, y, 1, barH);
       }
     }
 
     // draw arrivals (limit to first 500 visual)
     const Nvis = Math.min(hero.arrivals.length, 500);
+    const T = hero.X + hero.X;
     for (let i=0;i<Nvis;i++){
       const t = hero.arrivals[i]; // 0..T
-      const T = hero.X + hero.X;
       const x = padding + (t/T)*barW;
-      // compute wait based on continuous and discrete placement
       let wait = 0;
       if (t < hero.X) wait = hero.X - t;
       const isWait = wait > 1e-9;
@@ -436,12 +431,12 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
       c.arc(x, y + barH + 18 + (i%6)*2, 3.4, 0, Math.PI*2);
       c.fill();
     }
+    c.globalAlpha = 1;
   }
 
   function heroSpawnArrivals(N=2000) {
     hero.arrivals = [];
     const T = hero.X + hero.X;
-    // generate N uniform times in [0,T)
     for (let i=0;i<N;i++) hero.arrivals.push(Math.random()*T);
     computeHeroEmpirical();
     heroDraw();
@@ -452,23 +447,26 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     const contWaits = hero.arrivals.map(t => (t < hero.X ? hero.X - t : 0));
     const discWaits = hero.arrivals.map(t => {
       // quantize to slots of width Delta; compute slot index and wait
-      const slot = hero.Delta; const m = Math.round(hero.X/slot);
+      const slot = Math.max(0.0001, hero.Delta);
+      const m = Math.max(1, Math.floor(hero.X / slot)); // at least 1 slot
       const k = Math.floor(t / slot);
-      const halfSlots = m; // since symmetrical D=U and total slots = 2m
-      if (k < halfSlots) return (halfSlots - k)*slot;
+      if (k < m) return (m - k) * slot;
       return 0;
     });
-    // choose mode: if mode continuous -> report cont empirical mean; if discrete -> use disc; if both -> show difference
     let empMean;
     if (hero.mode === 'continuous') empMean = average(contWaits);
     else if (hero.mode === 'discrete') empMean = average(discWaits);
-    else empMean = average(contWaits); // default display continuous empirical, but we'll show analytics separately
+    else {
+      // mode 'both' -> show continuous empirical but both analytics exist above
+      empMean = average(contWaits);
+    }
     heroEmpMean.textContent = empMean.toFixed(4);
     heroCount.textContent = hero.arrivals.length;
   }
 
   function average(arr){ if (arr.length===0) return 0; return arr.reduce((a,b)=>a+b,0)/arr.length; }
 
+  // Wire up controls
   heroX.addEventListener('input', ()=>{ hero.X = +heroX.value; heroXv.textContent = hero.X; heroComputeAnalytics(); heroDraw(); });
   heroD.addEventListener('input', ()=>{ hero.Delta = +heroD.value; heroDv.textContent = hero.Delta.toFixed(2); heroComputeAnalytics(); heroDraw(); });
   heroMode.addEventListener('change', ()=>{ hero.mode = heroMode.value; heroDraw(); computeHeroEmpirical(); });
@@ -478,9 +476,10 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
   // init
   heroComputeAnalytics();
   heroDraw();
-}); // <-- ADD THIS LINE TO FIX THE SCRIPT
 
+})(); /* <-- IMPORTANT: invoke the IIFE so event listeners are actually attached */
 </script>
+
 <style>
   .sim-card { background: white; border-radius:10px; padding:12px; border:1px solid #eef3fa; box-shadow: 0 6px 18px rgba(12,20,30,0.03); }
   h4 { margin:0 0 8px 0; font-size:1rem; color:#08304b; }
@@ -523,7 +522,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 </div>
 
 <script>
-/* ---------- SIMPLE CYCLIC QUEUE SIM ---------- */
+/* ---------- SIMPLE CYCLIC QUEUE SIM (unchanged logic except no syntax issues) ---------- */
 (function(){
   const canvas = document.getElementById('qCanvas'), ctx = canvas.getContext('2d');
   const eD = document.getElementById('qD'), eDn = document.getElementById('qDn');
@@ -563,7 +562,6 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     }
     state.Q += arrivals;
     
-    // Update max queue for scaling
     if(state.Q > maxQueue) maxQueue = state.Q;
     
     const capacity = Math.floor(state.mu * U);
@@ -577,7 +575,6 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     state.Q -= served;
     state.cycles += 1;
     
-    // Update outputs
     oCycles.textContent = state.cycles;
     oQlen.textContent = state.Q;
     oW.textContent = (state.served? (state.totalWait/state.served).toFixed(4) : '0.0000');
@@ -588,16 +585,13 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     const w = canvas.clientWidth, h = canvas.clientHeight;
     ctx.clearRect(0,0,w,h);
     
-    // Draw background
     ctx.fillStyle = '#f7fbff'; 
     ctx.fillRect(0,0,w,h);
     
-    // Draw title
     ctx.fillStyle = '#0b2a3a'; 
     ctx.font='13px system-ui'; 
     ctx.fillText('Cyclic queue)', 12, 18);
     
-    // Draw schedule visualization
     const pad = 18, barW = w - pad*2, barH = 30;
     ctx.fillStyle = '#eef6fb'; 
     ctx.fillRect(pad,36,barW,barH);
@@ -605,44 +599,34 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     ctx.fillRect(pad,36,barW/2,barH);
     ctx.fillStyle = '#eefbea'; 
     ctx.fillRect(pad+barW/2,36,barW/2,barH);
-    ctx.fillStyle = '#123'; 
 
-
-    // Draw queue visualization with dynamic scaling
     const queueBarWidth = 30;
     const queueBarX = 20;
     const queueBarMaxHeight = h - 80;
     
-    // Calculate dynamic scaling - ensure we have at least 10 units for display
     const displayMaxQ = Math.max(10, maxQueue, state.Q);
     const queueHeight = Math.min(queueBarMaxHeight, (state.Q / displayMaxQ) * queueBarMaxHeight);
     
-    // Draw queue bar background
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(queueBarX, h - 20 - queueBarMaxHeight, queueBarWidth, queueBarMaxHeight);
     
-    // Draw current queue level with gradient for better visibility
     const gradient = ctx.createLinearGradient(queueBarX, h - 20 - queueHeight, queueBarX, h - 20);
     gradient.addColorStop(0, '#ff6b6b');
     gradient.addColorStop(1, '#ff8e8e');
     ctx.fillStyle = gradient;
     ctx.fillRect(queueBarX, h - 20 - queueHeight, queueBarWidth, queueHeight);
     
-    // Draw queue bar border
     ctx.strokeStyle = '#ccc';
     ctx.strokeRect(queueBarX, h - 20 - queueBarMaxHeight, queueBarWidth, queueBarMaxHeight);
     
-    // Draw queue value text
     ctx.fillStyle = '#0a4660';
     ctx.font = 'bold 14px system-ui';
     ctx.fillText(`Q: ${state.Q}`, queueBarX + queueBarWidth + 10, h - 20 - queueBarMaxHeight/2 + 5);
     
-    // Draw max queue indicator
     ctx.fillStyle = '#999';
     ctx.font = '10px system-ui';
     ctx.fillText(`Max: ${maxQueue}`, queueBarX, h - 20 - queueBarMaxHeight - 5);
     
-    // Draw parameters
     ctx.fillStyle = '#0b2a3a'; 
     ctx.font='12px system-ui';
     ctx.fillText(`Î»=${state.lambda}  Î¼=${state.mu}  cycles=${state.cycles}`, 12, h-12);
@@ -650,7 +634,6 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 
   bStart.addEventListener('click', ()=>{ 
     if(runner) return;
-    // Read controls
     state.D = +eD.value; 
     state.U = +eU.value; 
     state.lambda = +eL.value; 
@@ -678,7 +661,6 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
     draw(); 
   });
 
-  // Wire numeric mirrors
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
   
   eD.addEventListener('input', ()=>{ eDn.value = eD.value; }); 
@@ -693,10 +675,11 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
   eM.addEventListener('input', ()=>{ eMn.value = eM.value; }); 
   eMn.addEventListener('change', ()=>{ eM.value = clamp(+eMn.value, +eM.min, +eM.max); });
 
-  // Initial draw
   draw();
 })();
 </script>
+
+<!-- ===================== End of sims block ===================== -->
 
 <!-- ===================== End of sims block ===================== -->
 <br>
@@ -1105,9 +1088,6 @@ requestAnimationFrame(frame);
 
 </body>
 </html>
-
-
-
 
 
 
