@@ -201,13 +201,13 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <p>The mean wait is the average over $M=m_{U}+m_{D}$ slots is:</p>
 <p class="math">$$\mathbb{E}[W]_{\text{discrete}}=\frac{1}{M}\sum_{k=1}^{m_D} (m_D-k+1)\Delta = \frac{\Delta}{M}\times\frac{m_D(m_D+1)}{2}$$</p>
 <p class="math">After substituting $m_D=D/\Delta$ and $M=(D+U)/\Delta$,</p>
-<p class="math">$$\mathbb{E}[W]_{\text{discrete}}=\frac{D^2}{2(D+U)}+\frac{D\Delta}{2(D+U)}.$$</p>
+<p class="math">$$\boxed{\mathbb{E}[W]_{\text{discrete}}=\frac{D^2}{2(D+U)}+\frac{D\Delta}{2(D+U)}}$$</p>
 
 <br>
 <h3>Step 3 â€” Isolate and interpret the bias</h3>
 <p><b>This is the most important step!</b> We now see that we get different results for continuous and discrete time, but now let's understand the <b>gravity of the situation</b>. Usually, when you pay for server uptime, it's up to the user to decide the all aspects of <b>uptime</b>, but to make our model more realistic and useful, let's assume we're only using the server half the time. So for simplicity, we'll just go with $50\text{%}$ of time.</p>
 
-<p class="math">$$\text{bias}=\mathbb{E}[W]_{\text{discrete}}-\mathbb{E}[W]_{\text{continuous}}=\frac{D\Delta}{2(D+U)}$$</p>
+<p class="math">$$\boxed{\text{bias}=\mathbb{E}[W]_{\text{discrete}}-\mathbb{E}[W]_{\text{continuous}}=\frac{D\Delta}{2(D+U)}}$$</p>
 <p>As $D=U=X$:</p>
 <p class="math">$$\text{bias}=\frac{X\Delta}{4X}=\frac{\Delta}{4}$$
 <br>
@@ -219,14 +219,14 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <br>
 <h3>Step 4 â€” Isolate and interpret the bias</h3>
 <p>The discrete expectation equals the continuous expectation plus an additive correction proportional to $\Delta$;. The general bias is:</p>
-<p class="math">$$\text{bias}=\frac{D\Delta}{2(D+U)}.$$</p>
+<p class="math">$$\boxed{\text{bias}=\frac{D\Delta}{2(D+U)}}$$</p>
 <p>In practice, one should evaluate this against your latency budget: if the bias is a non-negligible fraction of your target latency,one needs refine timestamp resolution or account for the correction in design. More over the granularity and the server uptime changes the dynamics.</p>
 <br>
 
 <h3>Step 5 â€” Riemann-sum intuition (why the correction appears)</h3>
 <p><b>At first this may a bit different, but here lies the bridge with joins the discrete and continuous!</b></p>
 <p>The discrete sum acts as a <b>Riemann approximation to the integral</b> used in the continuous calculation. Rounding/endpoint choices introduce an \(O(\Delta)\) error: arrivals that miss an uptime boundary are bumped to the next slot, adding expected delay. For our triangular waiting function this leading error constant evaluates to the familiar quarter of a slot in the symmetric normalization.</p>
-<p class="math">$$\displaystyle \frac{1}{T}\sum_{j=1}^{m_D} (j\Delta)\frac{\Delta}{T}\approx \frac{1}{T}\int_0^D (D-t)\,dt + O(\Delta) $$</p>
+<p class="math">$$\boxed{\displaystyle \frac{1}{T}\sum_{j=1}^{m_D} (j\Delta)\frac{\Delta}{T}\approx \frac{1}{T}\int_0^D (D-t)\,dt + O(\Delta) }$$</p>
 <p>The computed \(O(\Delta)\) term equals \(\Delta/4\) in the symmetric setting.</p>
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
@@ -1107,4 +1107,5 @@ requestAnimationFrame(frame);
 
 </body>
 </html>
+
 
