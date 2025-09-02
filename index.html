@@ -218,13 +218,13 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 
 <br>
 <h3>Step 4 — Isolate and interpret the bias</h3>
-<p>The discrete expectation equals the continuous expectation plus an additive correction proportional to $\Delta$;. The general bias is:</p>
+<p>The discrete expectation equals the continuous expectation plus an additive correction proportional to $\Delta$, The general bias is:</p>
 <p class="math">$$\boxed{\text{bias}=\frac{D\Delta}{2(D+U)}}$$</p>
-<p>In practice, one should evaluate this against your latency budget: if the bias is a non-negligible fraction of your target latency,one needs refine timestamp resolution or account for the correction in design. More over the granularity and the server uptime changes the dynamics.</p>
+<p>In practice, one should evaluate this against your latency budget: if the bias is a non-negligible fraction of your target latency,one needs refine timestamp resolution or account for the correction in design. Moreover the granularity and the server uptime changes the dynamics.</p>
 <br>
 
 <h3>Step 5 — Riemann-sum intuition (why the correction appears)</h3>
-<p><b>At first this may a bit different, but here lies the bridge with joins the discrete and continuous!</b></p>
+<p><b>At first this may be a bit different, but here lies the bridge with joins the discrete and continuous!</b></p>
 <p>The discrete sum acts as a <b>Riemann approximation to the integral</b> used in the continuous calculation. Rounding/endpoint choices introduce an \(O(\Delta)\) error: arrivals that miss an uptime boundary are bumped to the next slot, adding expected delay. For our triangular waiting function this leading error constant evaluates to the familiar quarter of a slot in the symmetric normalization.</p>
 <p class="math">$$\boxed{\displaystyle \frac{1}{T}\sum_{j=1}^{m_D} (j\Delta)\frac{\Delta}{T}\approx \frac{1}{T}\int_0^D (D-t)\,dt + O(\Delta) }$$</p>
 <p>The computed \(O(\Delta)\) term equals \(\Delta/4\) in the symmetric setting.</p>
@@ -257,7 +257,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 
 <p><strong>2) Queueing with bursty arrivals and finite service</strong> — Model using Geo/Geo/1 or $M/G/1$ approximations and study how discretization amplifies tail probabilities and affects stability. Keep cyclic schedule but let arrivals be Poisson(\( \lambda \)) or Bernoulli-per-slot with \( p\!\approx\!\lambda\Delta \). Expected backlog: \( \mathbb{E}[N_D]=\lambda D \). Stability requires \( \lambda D < \mu U \) where capacity \( C=\mu U \). Assess offered load via \( \lambda\big(\mathbb{E}[W]_{\text{cont}}+\text{bias}\big) \).</p>
 
-<p><strong>3) Load on system</strong> — System would receive entry requests during downtime, creating a backlog.The backlog would be cleared at next uptime. Due to extra load, the sever can only process certain number of request, till the load is reduced. It can serve at a rate $\mu (t)$ (or capacity $C=\mu (t) U$ ). If $\lambda$, is the rate during $D$, then the stability condition (queue does not grow larger with time) is, $\lambda D=\mu U.$:</p>
+<p><strong>3) Load on system</strong> — System would receive entry requests during downtime, creating a backlog.The backlog would be cleared at next uptime. Due to extra load, the server can only process certain number of request, till the load is reduced. It can serve at a rate $\mu (t)$ (or capacity $C=\mu (t) U$ ). If $\lambda$, is the rate during $D$, then the stability condition (queue does not grow larger with time) is, $\lambda D=\mu U.$:</p>
 
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
@@ -1074,6 +1074,7 @@ requestAnimationFrame(frame);
 
 </body>
 </html>
+
 
 
 
