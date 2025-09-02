@@ -1,0 +1,1109 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Living between Discrete and Continuous Time — Summer of Math Exposition</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&amp;family=Roboto+Mono:wght@400;700&amp;family=Playwrite+Canada:wght@400&amp;family=Playfair+Display:ital@1&amp;display=swap" rel="stylesheet"/>
+<script>
+window.MathJax = {
+tex: {
+inlineMath: [['$', '$'], ['\\(', '\\)']],
+displayMath: [['$$', '$$'], ['\\[', '\\]']],
+processEscapes: true,
+processEnvironments: true
+},
+options: {
+skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+}
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+:root {
+--bg: #ffffff; --text: #0b1220; --muted: #5b6b78; --reading-bg: #fbf6e5;
+--underline: #ffd700; 
+}
+[data-theme="sepia"] {
+--bg: #fbf6e5; --text: #111; --muted: #425066;
+}
+[data-theme="inverted"] {
+--bg: #071428; --text: #e6eef6; --muted: #9fb0c6;
+}
+[data-theme="white"] {
+--bg: #ffffff; --text: #0b1220; --muted: #5b6b78;
+}
+
+html, body {
+height: 100%; overflow-x: hidden; margin: 0; background: var(--bg); color: var(--text);
+font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+.page {
+min-height: 100vh; display: flex; flex-direction: column; align-items: stretch;
+}
+.hero {
+  position: relative;               
+  display: flex;
+  flex-direction: column;           
+  align-items: center;              
+  padding-top: 15px;                
+  padding-bottom: 10px;
+}
+  
+.subtitle-container {
+  width: 100%;
+  text-align: center;
+  margin: 20px 0 40px 0;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--text);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+
+canvas {
+  width: 100%;
+  height: 20vh;                     
+  display: block;
+  margin: 0 auto;
+  cursor: default;
+
+  /* Important for stacking order */
+  position: relative;               /* make z-index effective */
+  z-index: 1;                       /* keep canvas behind subtitle */
+}
+/* Article content styling */
+.article-content {
+max-width: 800px;
+margin: 40px auto;
+padding: 0 20px;
+line-height: 1.6;
+font-size: 1.1rem;
+}
+.article-content h2 {
+font-family: 'Playfair Display', serif;
+margin-top: 1.5rem;
+color: var(--text);
+}
+.article-content h3 {
+font-family: 'Playfair Display', sans-serif;
+margin-top: 1.5rem;
+color: var(--text);
+}
+.article-content p {
+margin-bottom: 1rem;
+color: var(--text);
+}
+.math-display {
+text-align: center;
+margin: 2rem 0;
+padding: 1.5rem;
+background-color: rgba(0, 0, 0, 0.03);
+border-radius: 8px;
+overflow-x: auto;
+}
+.math-display mjx-container {
+outline: none;
+}
+
+/* --- Theme selector button and menu styles --- */
+.theme-selector-container {
+position: fixed; bottom: 20px; right: 20px; z-index: 100;
+}
+.theme-toggle-btn {
+background-color: var(--bg); color: var(--text); border: 1px solid rgba(0,0,0,0.05);
+padding: 10px; font-size: 20px; line-height: 1; border-radius: 50%;
+cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+}
+.theme-toggle-btn:hover {
+transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+.theme-toggle-btn.active {
+transform: rotate(45deg);
+}
+.theme-menu {
+position: absolute; bottom: calc(100% + 10px); right: 0;
+display: flex; flex-direction: column; gap: 8px;
+background-color: var(--bg); border: 1px solid rgba(0,0,0,0.05);
+padding: 10px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+opacity: 0; visibility: hidden; transform: translateY(10px);
+transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+.theme-menu.show {
+opacity: 1; visibility: visible; transform: translateY(0);
+}
+.theme-menu .crumb {
+background: transparent; border: none; padding: 8px 10px; border-radius: 8px;
+cursor: pointer; font-weight: 600; color: var(--muted);
+box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+white-space: nowrap; text-align: left;
+}
+.theme-menu .crumb:hover {
+background: rgba(0,0,0,0.02); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+.theme-menu .crumb[aria-pressed="true"] {
+color: var(--text);
+background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+box-shadow: 0 6px 18px rgba(10,20,30,0.06);
+backdrop-filter: blur(2px);
+}
+/* Footer styling */
+.footer {
+text-align: center;
+padding: 2rem;
+margin-top: 3rem;
+color: var(--muted);
+font-size: 0.9rem;
+}
+</style>
+</head>
+<body data-theme="white">
+  <div id="instruction" style="text-align:center; color:#888; font-size:1rem; padding:8px; font-style:italic; transition: opacity 1s ease;">
+  Hover on 'discrete' and 'continuous'
+</div>
+
+<div class="page">
+<div class="hero">
+  <canvas aria-label="Interactive heading: Nice Living between discrete and continuous" height="420" id="hero" role="img" width="1200"></canvas>
+</div>
+<div class="article-content">
+<h2>Our Dilemmic World</h2>
+<p> We live in a world that insists on being both discrete and continuous. We count apples, yet we measure its weight; digital photos appear smooth, but are made up of pixels. The language of the universe aptly reflects this contrast: discrete structures give us clarity and computation; continuous models provides intuition and calculus. 
+In fact, I believe, this tension is not a bug but a design feature of thinking — it tells stories we would otherwise miss.</p>
+
+<p>This short exposition follows one precise story inside that tension: <b>how modeling time as discrete slots, instead of a continuous flow, produces a small but exact bias in mean waiting time for periodic resources.</b> This little concept of math has real-world consequences. It's a perfect reminder to appreciate the discipline of discrete logic as much as we love the flow of continuous math.</p>
+<br>
+<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+<h2>The Model</h2>
+<p>Consider a computer system, such as a server, that cycles between periods of <b>downtime</b> and <b>uptime</b>. A user can only access the server during an uptime period. In our model, a key rule is that each time slot must have a single period of uptime or downtime. Our primary objective is to determine the expected time required for a user to log in. Our modeling choices are straightforward: we can treat the arrival time as a continuous variable or as one of several evenly spaced discrete slots.</p>
+<h3>Mathematical Set-Up</h3>
+<p>Let downtime be represented by $D$ and uptime be represented by $U$. Hence the cycle length $T=D+U$. </p>
+<h3>Part 1 — If time is modeled continuously</h3>
+<p>If arrival time is continuous, the only waiting happens when arrival falls in the downtime interval $\left[0, D\right)$ ; the wait equals the remaining downtime until $D$</p>
+<p>The expected wait under continuous arrivals is the average of $W(t)=D-t$ for $t\in \left[0, D\right)$,normalized by the cycle: </p>
+<p class="math">$$\mathbb{E}[W]_{\text{continuous}}=\frac{1}{T} \int_{0}^{T}(D-t) dt$$</p>
+<p>Computing the integral to obtain the closed form:</p>
+<p class="math">$$\int_{0}^{T}(D-t) dt = \frac{1}{2}D^{2} \qquad \implies \qquad \boxed{\mathbb{E}[W]_{\text{continuous}}=\frac{D^{2}}{2(D+U)}}$$</p>
+<br>
+
+<h3>Part 2 — If time is modeled discretely</h3>
+<p>If time is binned into slots of width $\Delta$, , an arrival is equally likely to fall into any slot. If it lands in downtime slot $k$ (counting from the earliest downtime slot), it must wait until the end of that slot sequence; the wait equals the number of remaining downtime slots times $\Delta$</p>
+<p>Now the number of bins for both would be, $m_{U}=\frac{U}{\Delta}$ and similarly, $m_{D}=\frac{D}{\Delta}$</p>
+<p>The mean wait is the average over $M=m_{U}+m_{D}$ slots is:</p>
+<p class="math">$$\mathbb{E}[W]_{\text{discrete}}=\frac{1}{M}\sum_{k=1}^{m_D} (m_D-k+1)\Delta = \frac{\Delta}{M}\times\frac{m_D(m_D+1)}{2}$$</p>
+<p class="math">After substituting $m_D=D/\Delta$ and $M=(D+U)/\Delta$,</p>
+<p class="math">$$\mathbb{E}[W]_{\text{discrete}}=\frac{D^2}{2(D+U)}+\frac{D\Delta}{2(D+U)}.$$</p>
+
+<br>
+<h3>Step 3 — Isolate and interpret the bias</h3>
+<p><b>This is the most important step!</b> We now see that we get different results for continuous and discrete time, but now let's understand the <b>gravity of the situation</b>. Usually, when you pay for server uptime, it's up to the user to decide the all aspects of <b>uptime</b>, but to make our model more realistic and useful, let's assume we're only using the server half the time. So for simplicity, we'll just go with $50\text{%}$ of time.</p>
+
+<p class="math">$$\text{bias}=\mathbb{E}[W]_{\text{discrete}}-\mathbb{E}[W]_{\text{continuous}}=\frac{D\Delta}{2(D+U)}$$</p>
+<p>As $D=U=X$:</p>
+<p class="math">$$\text{bias}=\frac{X\Delta}{4X}=\frac{\Delta}{4}$$
+<br>
+<h3>Example!</h3>
+<p>Let's take the <b>timescale</b> to be $1\text{ min}\equiv 60 \text{ seconds}$. $ U=D=30\text{ seconds}$. If logging granularity is \(\Delta=1\) s, the symmetric bias yields a numerical extra wait of:</p>
+<p class="math">$$\text{bias}=\frac{\Delta}{4}=0.25\ \text{s}.$$</p>
+<p>The continuous mean is \(X/4=7.5\) s, and the discrete mean becomes \(7.5+0.25=7.75\) s. Thus $1$ second granularity timing adds a <b>quarter-second</b> average wait in this example.</p>
+
+<br>
+<h3>Step 4 — Isolate and interpret the bias</h3>
+<p>The discrete expectation equals the continuous expectation plus an additive correction proportional to $\Delta$;. The general bias is:</p>
+<p class="math">$$\text{bias}=\frac{D\Delta}{2(D+U)}.$$</p>
+<p>In practice, one should evaluate this against your latency budget: if the bias is a non-negligible fraction of your target latency,one needs refine timestamp resolution or account for the correction in design. More over the granularity and the server uptime changes the dynamics.</p>
+<br>
+
+<h3>Step 5 — Riemann-sum intuition (why the correction appears)</h3>
+<p><b>At first this may a bit different, but here lies the bridge with joins the discrete and continuous!</b></p>
+<p>The discrete sum acts as a <b>Riemann approximation to the integral</b> used in the continuous calculation. Rounding/endpoint choices introduce an \(O(\Delta)\) error: arrivals that miss an uptime boundary are bumped to the next slot, adding expected delay. For our triangular waiting function this leading error constant evaluates to the familiar quarter of a slot in the symmetric normalization.</p>
+<p class="math">$$\displaystyle \frac{1}{T}\sum_{j=1}^{m_D} (j\Delta)\frac{\Delta}{T}\approx \frac{1}{T}\int_0^D (D-t)\,dt + O(\Delta) $$</p>
+<p>The computed \(O(\Delta)\) term equals \(\Delta/4\) in the symmetric setting.</p>
+<br>
+<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+<h2>Implications & Motivation</h2>
+<p>Small mathematical additives like the discretization bias \( \frac{D\Delta}{2(D+U)} \) need engineering judgment, as time scale sets the relevance:</p>
+
+<p>Even small additive biases matter when time scales are small or when events aggregate. Examples across scales:</p>
+
+<ul>
+  <li><strong>Human-facing services (seconds):</strong> a $0.25$ s extra mean wait affects perceived responsiveness and conversion metrics.</li>
+  <li><strong>Telemetry (ms–s):</strong> small biases accumulate in daily averages and can mislead anomaly detection.</li>
+  <li><strong>High-Frequency Trading a.k.a HFT (ms–µs):</strong> with \( \Delta = 1m s \), bias per event is \( 0.25m s \); across millions of events such shifts are economically meaningful.</li>
+  <li><strong>Real-time control (ms–µs):</strong> sample-time biases can erode stability margins or increase latency beyond acceptable control thresholds.</li>
+</ul>
+<p><b>Note that:</b></p>
+<p>The algebraic bias we derived, \( \displaystyle \text{bias}=\frac{D\Delta}{2(D+U)} \) (simplifying to \( \Delta/4 \) when \(D=U\)), is immediately actionable. If arrivals occur at rate \( \lambda \) (Poisson), the extra waiting-work introduced per unit time is about \( \lambda\cdot(\Delta/4) \) — a compact expression linking event rate, timestamp granularity, and cumulative cost. Changing the server available time will change several aspects.</p>
+
+<p>So we get a, <b>Design rule of thumb</b>: compute the bias from \( \frac{D\Delta}{2(D+U)} \) (or \( \Delta/4 \) for symmetric case) and compare to your system's latency or control tolerances; if the bias is large relative to requirements, reduce \( \Delta \) or explicitly model discrete effects.</p>
+
+<p>To put into perspective a \(1\ \mu\text{s}\) granularity adds \(0.25\ \mu\text{s}\) per event in HFT, and at \(10^6\) events/s aggregates to 0.25 s of waiting per second, which is a significant timescale in HFT. Thus the same small per-event constant can be negligible for web pages yet decisive in HFT, telemetry, or tight control loops.</p>
+<br>
+<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+<h2>Making the model realistic</h2>
+<p>We can also try to add realistic upgrades so one can adopt them incrementally, as the situation demands .</p>
+
+<p><strong>1) Randomized phase and jitter</strong> — Let cycle start vary randomly to model asynchronous systems; analyze by conditioning on phase and averaging. This typically reduces deterministic boundary bias. Replace fixed cycle start by random phase \( \phi \) with density \( p(\phi) \) on \([0,\Delta)\). Compute conditional bias \( b(\phi) \) and average:</p>
+<p class="math">$$ \displaystyle \text{bias}_{\text{avg}}=\int_0^{\Delta} b(\phi)\,p(\phi)\,d\phi $$</p></p>
+
+<p><strong>2) Queueing with bursty arrivals and finite service</strong> — Model using Geo/Geo/1 or $M/G/1$ approximations and study how discretization amplifies tail probabilities and affects stability. Keep cyclic schedule but let arrivals be Poisson(\( \lambda \)) or Bernoulli-per-slot with \( p\!\approx\!\lambda\Delta \). Expected backlog: \( \mathbb{E}[N_D]=\lambda D \). Stability requires \( \lambda D < \mu U \) where capacity \( C=\mu U \). Assess offered load via \( \lambda\big(\mathbb{E}[W]_{\text{cont}}+\text{bias}\big) \).</p>
+
+<p><strong>3) Multi-server / asynchronous duty cycles</strong> — Analyze interacting on/off servers with mean-field or fluid approximations to see when per-server discretization biases average out or persist. For \( n \) servers with staggered windows, compute system-level availability by convolving single-server distributions. As \( n \) grows, per-arrival bias tends to average down (heuristically ~\(1/n\) for well-mixed stagger).</p>
+
+<h4>Assumptions and simplifications</h4>
+<ul>
+  <li>Cycles: downtime \( D \), uptime \( U \) repeating</li>
+  <li>Arrival process: Poisson rate \( \lambda \) or Bernoulli per slot approximating Poisson</li>
+  <li>Service capacity: during uptime serve at rate \( \mu \) (or capacity \( C = \mu U \))</li>
+  <li>Objective: approximate expected wait for random arrival and assess discretization impact</li>
+</ul>
+
+<p><b>Note that:</b><p>
+<p><strong>Step 1 — Expected arrivals during downtime:</strong> The expected backlog arriving during downtime sets workload to be cleared at next uptime. For Poisson arrivals: \( \mathbb{E}[N_D] = \lambda D \).</p>
+
+<p><strong>Step 2 — Service and clearing condition:</strong> If uptime service capacity exceeds expected backlog, most arrivals clear; otherwise queues persist and can grow. Stability condition (mean-based): \( \lambda D < \mu U \).</p>
+
+<p><strong>Step 3 — Discretization effect on queue:</strong> Discretizing time changes per-slot arrival counts (Bernoulli with \( p \approx \lambda \Delta \)), and each arrival's mean wait shifts by per-arrival bias; aggregate queuing behavior and tails can be amplified. Discrete expected arrivals per downtime: \( \mathbb{E}[N_D] \approx \lambda D \). Per-arrival additive bias (general): \( \frac{D\Delta}{2(D+U)} \).</p>
+<br>
+<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+<h2>Let's play around! a.k.a Simulations</h2>
+<!-- ===================== Interactive Simulations ===================== -->
+<style>
+  /* SIMS: clean, modern controls and canvas styling */
+  .sim-section { margin: 36px 0; padding: 18px; border-radius: 12px; background: linear-gradient(180deg, #ffffff, #fbfcff); box-shadow: 0 8px 20px rgba(20,30,50,0.06); }
+  .sim-header { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .sim-controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .sim-controls label { font-size:0.92rem; color:#243; }
+  .sim-controls input[type="range"] { width:160px; }
+  .sim-canvas { width:100%; max-width:900px; height:160px; border-radius:8px; background:linear-gradient(180deg,#f7fbff,#eef7ff); display:block; margin-top:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); }
+  .sim-bottom { display:flex; gap:18px; margin-top:10px; flex-wrap:wrap; }
+  .stat { background:#fff; border-radius:8px; padding:8px 12px; box-shadow: 0 4px 12px rgba(10,20,30,0.04); min-width:140px; }
+  button { padding:8px 12px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:linear-gradient(180deg,#fff,#f5f8ff); cursor:pointer; }
+  .small { font-size:0.88rem; color:#405; }
+  .legend { display:flex; gap:10px; align-items:center; font-size:0.9rem; color:#334; }
+  .dot { width:12px; height:12px; border-radius:50%; display:inline-block; vertical-align:middle; margin-right:6px; }
+  /* Simple responsive */
+  @media (max-width:640px){ .sim-controls input[type="range"]{ width:120px } .sim-canvas{ height:140px } }
+</style>
+
+<!-- ---------- SIM 1: Hero visualizer (discrete vs continuous arrivals) ---------- -->
+<div class="sim-section" id="sim-hero">
+  <div class="sim-header">
+    <div>
+      <h3 style="margin:0">Hero visualizer — discrete vs continuous</h3>
+      <p style="margin:6px 0 0;" class="small">See arrivals (dots) on a single cycle bar (downtime → uptime). Toggle discrete/continuous and tune <em>D</em>, <em>&Delta;</em>. Theoretical and empirical means update live.</p>
+    </div>
+    <div class="legend">
+      <span class="dot" style="background:#f44"></span><span class="small">Waiting</span>
+      <span class="dot" style="background:#2a9"></span><span class="small">No wait</span>
+    </div>
+  </div>
+
+  <div class="sim-controls" role="region" aria-label="Hero controls">
+    <label>Downtime/uptime (X): <strong id="hero-Xv">30</strong>s
+      <input id="hero-X" type="range" min="5" max="120" value="30" step="1">
+    </label>
+    <label>Slot Δ: <strong id="hero-Dv">1.0</strong>s
+      <input id="hero-D" type="range" min="0.1" max="5" value="1" step="0.1">
+    </label>
+    <label>Mode:
+      <select id="hero-mode">
+        <option value="continuous">Continuous</option>
+        <option value="discrete">Discrete (snap to slots)</option>
+        <option value="both">Both (overlay)</option>
+      </select>
+    </label>
+    <button id="hero-spawn">Spawn  1000 arrivals</button>
+    <button id="hero-reset">Clear</button>
+  </div>
+
+  <canvas id="hero-canvas" class="sim-canvas" width="900" height="160" aria-label="Hero arrival visualizer"></canvas>
+
+  <div class="sim-bottom">
+    <div class="stat">
+      <div class="small">Analytic (continuous)</div>
+      <div><strong id="hero-anal-cont">7.50</strong> s</div>
+    </div>
+    <div class="stat">
+      <div class="small">Analytic (discrete)</div>
+      <div><strong id="hero-anal-disc">7.75</strong> s</div>
+    </div>
+    <div class="stat">
+      <div class="small">Empirical mean wait</div>
+      <div><strong id="hero-emp-mean">—</strong> s</div>
+    </div>
+    <div class="stat">
+      <div class="small">Events</div>
+      <div><strong id="hero-count">0</strong></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================== JavaScript for the sims ===================== -->
+<script>
+(function(){
+  /* ---------- Helpers ---------- */
+  function randPoisson(lambda) {
+    // Knuth's algorithm: suitable for small lambda. For larger lambda, use approximation.
+    let L = Math.exp(-lambda);
+    let k = 0;
+    let p = 1;
+    do {
+      k++;
+      p *= Math.random();
+    } while (p > L);
+    return k - 1;
+  }
+
+  function samplePoissonPoints(lambda, T) {
+    // For efficiency: sample N ~ Poisson(lambda*T), then N uniform times in [0,T)
+    const mean = lambda * T;
+    // For moderate mean, use direct Poisson; else approximate by normal. We'll use Poisson for mean <= 1e5 (fine)
+    const N = randPoisson(mean);
+    const arr = new Array(N);
+    for (let i=0;i<N;i++) arr[i] = Math.random()*T;
+    return arr;
+  }
+
+  /* ---------- SIM 1: Hero visualizer ---------- */
+  const hero = {
+    X: 30, Delta: 1, canvas: document.getElementById('hero-canvas'),
+    ctx: document.getElementById('hero-canvas').getContext('2d'),
+    mode: 'continuous', arrivals: [], empMean: null
+  };
+  const heroX = document.getElementById('hero-X'), heroXv = document.getElementById('hero-Xv');
+  const heroD = document.getElementById('hero-D'), heroDv = document.getElementById('hero-Dv');
+  const heroMode = document.getElementById('hero-mode');
+  const heroSpawn = document.getElementById('hero-spawn'), heroReset = document.getElementById('hero-reset');
+  const heroAnalCont = document.getElementById('hero-anal-cont'), heroAnalDisc = document.getElementById('hero-anal-disc');
+  const heroEmpMean = document.getElementById('hero-emp-mean'), heroCount = document.getElementById('hero-count');
+
+  function heroComputeAnalytics() {
+    const D = hero.X, U = hero.X;
+    const cont = D*D/(2*(D+U));
+    const disc = cont + (D*hero.Delta)/(2*(D+U));
+    heroAnalCont.textContent = cont.toFixed(4);
+    heroAnalDisc.textContent = disc.toFixed(4);
+  }
+
+  function heroDraw() {
+    const c = hero.ctx, w = hero.canvas.width, h = hero.canvas.height;
+    c.clearRect(0,0,w,h);
+    // bar
+    const padding = 24;
+    const barW = w - padding*2;
+    const barH = 44;
+    const y = 40;
+    // downtime gray (left half)
+    c.fillStyle = '#eef3f8'; c.fillRect(padding, y, barW/2, barH);
+    c.fillStyle = '#e6fff7'; c.fillRect(padding+barW/2, y, barW/2, barH); // uptime
+    c.strokeStyle = '#cfe'; c.strokeRect(padding, y, barW, barH);
+    c.fillStyle = '#234'; c.font = '14px system-ui';
+    c.fillText('Downtime', padding + barW/4 - 24, y + barH/2 + 5);
+    c.fillText('Uptime', padding + 3*barW/4 - 12, y + barH/2 + 5);
+
+    // draw slots if discrete or either mode
+    if (hero.mode!=='continuous') {
+      const D = hero.X, U = hero.X, total = D+U, slot = hero.Delta;
+      const m = Math.round(D/slot);
+      const slotPx = (barW/2)/Math.max(1,m);
+      c.fillStyle = 'rgba(0,0,0,0.03)';
+      for (let i=0;i<m;i++){
+        c.fillRect(padding + i*slotPx, y, 1, barH);
+      }
+    }
+
+    // draw arrivals (limit to first 500 visual)
+    const Nvis = Math.min(hero.arrivals.length, 500);
+    for (let i=0;i<Nvis;i++){
+      const t = hero.arrivals[i]; // 0..T
+      const T = hero.X + hero.X;
+      const x = padding + (t/T)*barW;
+      // compute wait based on continuous and discrete placement
+      let wait = 0;
+      if (t < hero.X) wait = hero.X - t;
+      const isWait = wait > 1e-9;
+      c.beginPath();
+      c.fillStyle = isWait ? '#f24' : '#169e6a';
+      c.globalAlpha = 0.85;
+      c.arc(x, y + barH + 18 + (i%6)*2, 3.4, 0, Math.PI*2);
+      c.fill();
+    }
+  }
+
+  function heroSpawnArrivals(N=1000) {
+    hero.arrivals = [];
+    const T = hero.X + hero.X;
+    // generate N uniform times in [0,T)
+    for (let i=0;i<N;i++) hero.arrivals.push(Math.random()*T);
+    computeHeroEmpirical();
+    heroDraw();
+  }
+
+  function computeHeroEmpirical() {
+    const T = hero.X + hero.X;
+    const contWaits = hero.arrivals.map(t => (t < hero.X ? hero.X - t : 0));
+    const discWaits = hero.arrivals.map(t => {
+      // quantize to slots of width Delta; compute slot index and wait
+      const slot = hero.Delta; const m = Math.round(hero.X/slot);
+      const k = Math.floor(t / slot);
+      const halfSlots = m; // since symmetrical D=U and total slots = 2m
+      if (k < halfSlots) return (halfSlots - k)*slot;
+      return 0;
+    });
+    // choose mode: if mode continuous -> report cont empirical mean; if discrete -> use disc; if both -> show difference
+    let empMean;
+    if (hero.mode === 'continuous') empMean = average(contWaits);
+    else if (hero.mode === 'discrete') empMean = average(discWaits);
+    else empMean = average(contWaits); // default display continuous empirical, but we'll show analytics separately
+    heroEmpMean.textContent = empMean.toFixed(4);
+    heroCount.textContent = hero.arrivals.length;
+  }
+
+  function average(arr){ if (arr.length===0) return 0; return arr.reduce((a,b)=>a+b,0)/arr.length; }
+
+  heroX.addEventListener('input', ()=>{ hero.X = +heroX.value; heroXv.textContent = hero.X; heroComputeAnalytics(); heroDraw(); });
+  heroD.addEventListener('input', ()=>{ hero.Delta = +heroD.value; heroDv.textContent = hero.Delta.toFixed(2); heroComputeAnalytics(); heroDraw(); });
+  heroMode.addEventListener('change', ()=>{ hero.mode = heroMode.value; heroDraw(); computeHeroEmpirical(); });
+  heroSpawn.addEventListener('click', ()=>{ heroSpawnArrivals(1000); });
+  heroReset.addEventListener('click', ()=>{ hero.arrivals = []; heroEmpMean.textContent = '—'; heroCount.textContent = '0'; heroDraw(); });
+
+  // init
+  heroComputeAnalytics();
+  heroDraw();
+
+</script>
+<style>
+  .sim-card { background: white; border-radius:10px; padding:12px; border:1px solid #eef3fa; box-shadow: 0 6px 18px rgba(12,20,30,0.03); }
+  h4 { margin:0 0 8px 0; font-size:1rem; color:#08304b; }
+  p.small { margin:0 0 8px 0; font-size:0.9rem; color:#335; }
+  .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .ctrl { display:flex; gap:6px; align-items:center; background:#fbfdff; padding:6px 8px; border-radius:8px; border:1px solid #eef6fb; }
+  input[type=range]{ width:140px; }
+  input[type=number]{ width:72px; padding:6px; border-radius:6px; border:1px solid #dfeaf3; }
+  button.small { padding:7px 10px; border-radius:8px; background:linear-gradient(180deg,#e6f7ff,#dbeeff); border:1px solid #bfe6ff; cursor:pointer; color:#08304b; font-weight:600; }
+  .canvas { width:100%; height:180px; background: linear-gradient(180deg,#ffffff,#fbfdff); border-radius:8px; border:1px solid #eef6fb; display:block; }
+  .stats { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .stat { background:#fbfdff; border:1px solid #eef6fb; padding:8px 10px; border-radius:8px; color:#073045; min-width:120px; }
+  .muted { color:#587380; font-size:0.88rem; }
+</style>
+
+<div class="sim-card" style="grid-column: 1 / -1;">
+  <h4>Queue sim (simple cyclic model)</h4>
+  <p class="small">Poisson arrivals (rate \(\lambda\)); cyclic schedule with downtime \(D\) and uptime \(U\); service rate \(\mu\) during uptime. Toggle discrete arrival placement. This simplified sim gives quick intuition about backlog and mean wait.</p>
+
+  <div class="controls">
+    <div class="ctrl">D <input id="qD" type="range" min="2" max="60" value="40"><input id="qDn" type="number" value="40" min="2" max="60"></div>
+    <div class="ctrl">U <input id="qU" type="range" min="2" max="60" value="20"><input id="qUn" type="number" value="20" min="2" max="60"></div>
+    <div class="ctrl">λ <input id="qL" type="range" min="1" max="2000" value="100"><input id="qLn" type="number" value="100" min="1" max="2000"></div>
+    <div class="ctrl">μ <input id="qM" type="range" min="1" max="5000" value="200"><input id="qMn" type="number" value="200" min="1" max="5000"></div>
+    <div class="ctrl">
+      <select id="qMode"><option value="poisson">Poisson</option><option value="discrete">Discrete slots</option></select>
+    </div>
+    <button id="qStart" class="small">Start</button>
+    <button id="qStop" class="small">Stop</button>
+    <button id="qReset" class="small">Reset</button>
+  </div>
+
+  <canvas id="qCanvas" class="canvas" width="1200" height="160" aria-label="queue visual"></canvas>
+
+  <div class="stats" style="margin-top:8px;">
+    <div class="stat"><div class="muted">Cycles</div><div id="qCycles">0</div></div>
+    <div class="stat"><div class="muted">Queue</div><div id="qLen">0</div></div>
+    <div class="stat"><div class="muted">Mean wait</div><div id="qW">0.000</div></div>
+  </div>
+</div>
+
+<script>
+/* ---------- SIMPLE CYCLIC QUEUE SIM ---------- */
+(function(){
+  const canvas = document.getElementById('qCanvas'), ctx = canvas.getContext('2d');
+  const eD = document.getElementById('qD'), eDn = document.getElementById('qDn');
+  const eU = document.getElementById('qU'), eUn = document.getElementById('qUn');
+  const eL = document.getElementById('qL'), eLn = document.getElementById('qLn');
+  const eM = document.getElementById('qM'), eMn = document.getElementById('qMn');
+  const mode = document.getElementById('qMode');
+  const bStart = document.getElementById('qStart'), bStop = document.getElementById('qStop'), bReset = document.getElementById('qReset');
+  const oCycles = document.getElementById('qCycles'), oQlen = document.getElementById('qLen'), oW = document.getElementById('qW');
+
+  let state = { D:30, U:30, lambda:100, mu:200, mode:'poisson', Q:0, served:0, totalWait:0, cycles:0 };
+  let runner = null;
+  let maxQueue = 0; // Track maximum queue for scaling
+
+  function fit(){ canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
+  fit(); window.addEventListener('resize', fit);
+
+  function samplePoisson(mean){
+    if(mean < 50){
+      let L = Math.exp(-mean), k=0, p=1;
+      do{ k++; p *= Math.random(); } while(p > L);
+      return k-1;
+    } else {
+      return Math.max(0, Math.round(mean + Math.sqrt(mean) * (Math.random()*2-1)));
+    }
+  }
+
+  function step(){
+    const D = state.D, U = state.U;
+    let arrivals = 0;
+    if(state.mode === 'poisson'){
+      arrivals = samplePoisson(state.lambda * D);
+    } else {
+      const delta = 1; const m = Math.max(1, Math.round(D/delta));
+      const p = Math.min(0.9999, state.lambda * delta);
+      for(let i=0;i<m;i++) if(Math.random() < p) arrivals++;
+    }
+    state.Q += arrivals;
+    
+    // Update max queue for scaling
+    if(state.Q > maxQueue) maxQueue = state.Q;
+    
+    const capacity = Math.floor(state.mu * U);
+    const served = Math.min(state.Q, capacity);
+    if(served > 0){
+      const Qb = state.Q;
+      const avgPos = (Qb + (Qb - served + 1))/2;
+      state.totalWait += (avgPos / state.mu) * served;
+    }
+    state.served += served;
+    state.Q -= served;
+    state.cycles += 1;
+    
+    // Update outputs
+    oCycles.textContent = state.cycles;
+    oQlen.textContent = state.Q;
+    oW.textContent = (state.served? (state.totalWait/state.served).toFixed(4) : '0.0000');
+    draw();
+  }
+
+  function draw(){
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    
+    // Draw background
+    ctx.fillStyle = '#f7fbff'; 
+    ctx.fillRect(0,0,w,h);
+    
+    // Draw title
+    ctx.fillStyle = '#0b2a3a'; 
+    ctx.font='13px system-ui'; 
+    ctx.fillText('Cyclic queue)', 12, 18);
+    
+    // Draw schedule visualization
+    const pad = 18, barW = w - pad*2, barH = 30;
+    ctx.fillStyle = '#eef6fb'; 
+    ctx.fillRect(pad,36,barW,barH);
+    ctx.fillStyle = '#fdecef'; 
+    ctx.fillRect(pad,36,barW/2,barH);
+    ctx.fillStyle = '#eefbea'; 
+    ctx.fillRect(pad+barW/2,36,barW/2,barH);
+    ctx.fillStyle = '#123'; 
+
+
+    // Draw queue visualization with dynamic scaling
+    const queueBarWidth = 30;
+    const queueBarX = 20;
+    const queueBarMaxHeight = h - 80;
+    
+    // Calculate dynamic scaling - ensure we have at least 10 units for display
+    const displayMaxQ = Math.max(10, maxQueue, state.Q);
+    const queueHeight = Math.min(queueBarMaxHeight, (state.Q / displayMaxQ) * queueBarMaxHeight);
+    
+    // Draw queue bar background
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(queueBarX, h - 20 - queueBarMaxHeight, queueBarWidth, queueBarMaxHeight);
+    
+    // Draw current queue level with gradient for better visibility
+    const gradient = ctx.createLinearGradient(queueBarX, h - 20 - queueHeight, queueBarX, h - 20);
+    gradient.addColorStop(0, '#ff6b6b');
+    gradient.addColorStop(1, '#ff8e8e');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(queueBarX, h - 20 - queueHeight, queueBarWidth, queueHeight);
+    
+    // Draw queue bar border
+    ctx.strokeStyle = '#ccc';
+    ctx.strokeRect(queueBarX, h - 20 - queueBarMaxHeight, queueBarWidth, queueBarMaxHeight);
+    
+    // Draw queue value text
+    ctx.fillStyle = '#0a4660';
+    ctx.font = 'bold 14px system-ui';
+    ctx.fillText(`Q: ${state.Q}`, queueBarX + queueBarWidth + 10, h - 20 - queueBarMaxHeight/2 + 5);
+    
+    // Draw max queue indicator
+    ctx.fillStyle = '#999';
+    ctx.font = '10px system-ui';
+    ctx.fillText(`Max: ${maxQueue}`, queueBarX, h - 20 - queueBarMaxHeight - 5);
+    
+    // Draw parameters
+    ctx.fillStyle = '#0b2a3a'; 
+    ctx.font='12px system-ui';
+    ctx.fillText(`λ=${state.lambda}  μ=${state.mu}  cycles=${state.cycles}`, 12, h-12);
+  }
+
+  bStart.addEventListener('click', ()=>{ 
+    if(runner) return;
+    // Read controls
+    state.D = +eD.value; 
+    state.U = +eU.value; 
+    state.lambda = +eL.value; 
+    state.mu = +eM.value; 
+    state.mode = mode.value;
+    runner = setInterval(step, 250);
+  });
+  
+  bStop.addEventListener('click', ()=>{ 
+    if(runner) clearInterval(runner); 
+    runner = null; 
+  });
+  
+  bReset.addEventListener('click', ()=>{ 
+    if(runner) clearInterval(runner); 
+    runner = null; 
+    state.Q = 0; 
+    state.served = 0; 
+    state.totalWait = 0; 
+    state.cycles = 0; 
+    maxQueue = 0;
+    oCycles.textContent = '0'; 
+    oQlen.textContent = '0'; 
+    oW.textContent = '0.0000'; 
+    draw(); 
+  });
+
+  // Wire numeric mirrors
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+  
+  eD.addEventListener('input', ()=>{ eDn.value = eD.value; }); 
+  eDn.addEventListener('change', ()=>{ eD.value = clamp(+eDn.value, +eD.min, +eD.max); });
+  
+  eU.addEventListener('input', ()=>{ eUn.value = eU.value; }); 
+  eUn.addEventListener('change', ()=>{ eU.value = clamp(+eUn.value, +eU.min, +eU.max); });
+  
+  eL.addEventListener('input', ()=>{ eLn.value = eL.value; }); 
+  eLn.addEventListener('change', ()=>{ eL.value = clamp(+eLn.value, +eL.min, +eL.max); });
+  
+  eM.addEventListener('input', ()=>{ eMn.value = eM.value; }); 
+  eMn.addEventListener('change', ()=>{ eM.value = clamp(+eMn.value, +eM.min, +eM.max); });
+
+  // Initial draw
+  draw();
+})();
+</script>
+
+<!-- ===================== End of sims block ===================== -->
+<br>
+<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+<h2>Conclusion</h2>
+<p>So, while the dance between the discrete and the continuous shapes everything from math to the world around us, it’s not about choosing one over the other, it’s about appreciating the unique strengths each brings to the table. The next time you weigh an apple after counting it, or stream a song built from a million digital bits, remember: it’s this beautiful tension that helps us piece together a clearer, richer story of how things work.
+And thank you for reading this far—I hope it wasn’t too much of a <b>continuous</b> effort, and that you found a <b>discrete</b> moment of enjoyment in it.</p>
+
+
+
+</div>
+<div class="footer">
+<p>Created by Arnav Joglekar for SoME4</p>
+<p style="font-size: 0.8rem; color: var(--muted); margin-top: 1rem;">
+Acknowledgements: Mathematical typography with <a href="https://www.mathjax.org/">MathJax</a>.
+Fonts used: Inter, Roboto Mono, and Playfair Display via <a href="https://fonts.google.com/">Google Fonts</a>.
+</p>
+</div>
+</div>
+<div class="theme-selector-container">
+<button aria-label="Toggle theme menu" class="theme-toggle-btn">⚙️</button>
+<div class="theme-menu" id="theme-menu">
+<button aria-pressed="false" class="crumb" data-theme="sepia">Reading (Sepia)</button>
+<button aria-pressed="true" class="crumb" data-theme="white">Normal (White)</button>
+</div>
+</div>
+<script>
+(async function() {
+// --- Canvas and Sizing Setup ---
+const canvas = document.getElementById('hero');
+const ctx = canvas.getContext('2d');
+const DPR = Math.max(1, window.devicePixelRatio || 1);
+
+function resizeCanvasToDisplaySize() {
+        const cssWidth = window.innerWidth;
+        const cssHeight = window.innerHeight;
+        canvas.style.width = cssWidth + 'px';
+        canvas.style.height = cssHeight + 'px';
+        canvas.width = Math.round(cssWidth * DPR);
+        canvas.height = Math.round(cssHeight * DPR);
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+resizeCanvasToDisplaySize();
+window.addEventListener('resize', () => { layoutDirty = true; resizeCanvasToDisplaySize(); });
+
+// --- Font Loading and State Management ---
+const fonts = { ui: 'Inter', mono: 'Roboto Mono', continuous: 'Playfair Display' };
+const headingPx = 64;
+let layoutDirty = true;
+const state = {
+mode: 'idle',
+hover: null,
+time: 0,
+discreteSpacing: 0,
+wordGap: 20,
+continuousLetterSpacing: -2, // Adjusted for better cursive connection
+continuousWave: false,
+continuousWaveStart: 0,
+underlineProgress: 0,
+underlineVisible: false,
+phraseWidths: {},
+totalWidth: 0,
+startX: 0,
+underlinePlayed: false
+};
+
+// Data model for the heading phrases
+const phrase = [
+{ id: 'from', text: 'Living between', font: 'ui', weight: '600' },
+{ id: 'discrete', text: 'discrete', font: 'ui', weight: '600' },
+{ id: 'to', text: 'and', font: 'ui', weight: '600' },
+{ id: 'continuous', text: 'continuous', font: 'ui', weight: '600' }
+];
+const letters = {};
+const fontWidths = {};
+
+// Measures letter widths for initial layout
+function measureInitial() {
+phrase.forEach(p => {
+letters[p.id] = p.text.split('').map((ch, i) => ({
+char: ch, baseW: 0, curX: 0, curY: 0,
+targetX: 0, targetY: 0, i: i, font: p.font,
+weight: p.weight, opacity: 1,
+}));
+});
+}
+
+// Measures and caches widths for all fonts
+function measureFonts() {
+const fontList = ['ui', 'mono', 'continuous'];
+fontList.forEach(f => {
+const fontName = fonts[f];
+let fontString = `400 ${headingPx}px "${fontName}"`;
+if (f === 'continuous') {
+fontString = `italic ${fontString}`;
+}
+ctx.font = fontString;
+const phraseId = phrase.find(p => p.font === f)?.id || 'discrete';
+if (letters[phraseId]) {
+letters[phraseId].forEach(l => {
+fontWidths[l.char + f] = ctx.measureText(l.char).width;
+});
+}
+});
+
+// Use a generic font for `ui` since it's the base
+ctx.font = `600 ${headingPx}px "${fonts.ui}"`;
+phrase.forEach(p => {
+let width = 0;
+letters[p.id].forEach(l => {
+l.baseW = ctx.measureText(l.char).width;
+width += l.baseW;
+});
+state.phraseWidths[p.id] = width;
+});
+}
+
+// Load fonts and initialize measurements
+try {
+await Promise.all([
+document.fonts.load(`600 ${headingPx}px "${fonts.ui}"`),
+document.fonts.load(`700 ${headingPx}px "${fonts.mono}"`),
+document.fonts.load(`italic 400 ${headingPx}px "Playfair Display"`)
+]);
+await document.fonts.ready;
+measureInitial();
+measureFonts();
+} catch(e) {
+console.warn('Font load failed or delayed', e);
+}
+
+// --- Layout Computation and Rendering ---
+const wordBoxes = [];
+function computeLayout() {
+if (!layoutDirty) return;
+layoutDirty = false;
+
+// Recompute per-letter measured width based on current state
+Object.keys(letters).forEach(id => {
+letters[id].forEach(l => {
+if (id === 'discrete' || id === 'continuous') {
+l.measuredW = fontWidths[l.char + l.font] || l.baseW;
+} else {
+l.measuredW = l.baseW;
+}
+});
+});
+
+// Calculate total widths and position words
+state.totalWidth = 0;
+const phraseTotalWidths = {};
+phrase.forEach(p => {
+let t = 0;
+letters[p.id].forEach((l, i) => {
+t += l.measuredW + (p.id === 'discrete' ? state.discreteSpacing : (p.id === 'continuous' ? state.continuousLetterSpacing : 0));
+});
+phraseTotalWidths[p.id] = t;
+state.totalWidth += t;
+});
+
+state.totalWidth += (phrase.length - 1) * state.wordGap;
+
+const canvasW = canvas.width / DPR;
+const yBase = Math.round((canvas.height / DPR) * 0.5);
+let cursor = Math.max(40, (canvasW - state.totalWidth) / 2);
+state.startX = cursor;
+
+phrase.forEach((p, pi) => {
+const arr = letters[p.id];
+const wordStart = cursor;
+for (let i = 0; i < arr.length; i++) {
+const letter = arr[i];
+letter.targetX = cursor;
+letter.targetY = yBase;
+cursor += letter.measuredW + (p.id === 'discrete' ? state.discreteSpacing : (p.id === 'continuous' ? state.continuousLetterSpacing : 0));
+}
+wordBoxes[pi] = {
+id: p.id, x: wordStart, y: yBase - headingPx,
+w: phraseTotalWidths[p.id], h: headingPx * 1.2
+};
+cursor += state.wordGap;
+});
+}
+
+// Initialize positions on first run
+computeLayout();
+Object.values(letters).forEach(arr => arr.forEach(l => { l.curX = l.targetX; l.curY = l.targetY; }));
+// Animation loop
+let last = performance.now();
+function frame(now) {
+const dt = Math.min(64, now - last);
+last = now;
+state.time = now/1000;
+// Animate positions and effects
+Object.keys(letters).forEach(id => letters[id].forEach(l => {
+let offsetY = 0;
+if (id === 'continuous' && state.continuousWave) {
+const tt = state.time - state.continuousWaveStart;
+const amp = 50 * Math.exp(-2.8 * tt);
+const phase = l.i * 0.45 + tt * 9.5;
+offsetY = Math.sin(phase) * amp;
+// Collapse discrete when the wave happens
+if (tt > 0.2 && state.discreteSpacing > 0) {
+state.discreteSpacing = Math.max(0, state.discreteSpacing - 0.5);
+layoutDirty = true;
+}
+}
+l.curX = lerp(l.curX, l.targetX, 0.18);
+l.curY = lerp(l.curY, l.targetY + offsetY, 0.18);
+}));
+
+// Update underline animation
+if (state.underlineVisible) {
+state.underlineProgress = Math.min(1, (state.time - state.continuousWaveStart) / 0.7);
+}
+
+computeLayout();
+draw();
+requestAnimationFrame(frame);
+}
+
+// Drawing function
+function draw() {
+ctx.clearRect(0, 0, canvas.width / DPR, canvas.height / DPR);
+ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg') || '#fff';
+ctx.fillRect(0, 0, canvas.width / DPR, canvas.height / DPR);
+
+// Draw letters
+Object.keys(letters).forEach(id => letters[id].forEach(l => {
+let fontString = `${l.weight} ${headingPx}px "${fonts[l.font]}"`;
+if (l.font === 'continuous') {
+fontString = `italic ${fontString}`;
+}
+ctx.font = fontString;
+ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text') || '#0b1220';
+ctx.globalAlpha = 1;
+ctx.fillText(l.char, l.curX, l.curY);
+}));
+
+// Draw underline for the entire title when active
+if (state.underlineProgress > 0) {
+const yBase = Math.round((canvas.height / DPR) * 0.5);
+const startX = state.startX;
+const endX = startX + state.totalWidth;
+const currentX = startX + (endX - startX) * state.underlineProgress;
+const yPos = yBase + 30;
+// Create gradient for fading effect
+const gradient = ctx.createLinearGradient(startX, 0, currentX, 0);
+gradient.addColorStop(0, '#ADD8E6');
+gradient.addColorStop(0.95, getComputedStyle(document.body).getPropertyValue('--underline') || '#ffd700');
+gradient.addColorStop(1, '#ADD8E6');
+ctx.beginPath();
+ctx.moveTo(startX, yPos);
+ctx.lineTo(currentX, yPos);
+ctx.strokeStyle = gradient;
+ctx.lineWidth = 3;
+ctx.stroke();
+}
+
+// --- Start: Draw subtitle on canvas ---
+const subtitleText = "When time ticks v/s When time flows: A system's perspective";
+const subtitleFontSize = 18;
+
+// Set font style for the subtitle
+ctx.font = `italic 500 ${subtitleFontSize}px "${fonts.ui}"`;
+ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--muted') || '#5b6b78';
+ctx.textAlign = 'center'; // Center the text horizontally
+
+// Calculate position to align with the main heading above
+const subtitleX = state.startX + state.totalWidth / 2;
+const yBase = Math.round((canvas.height / DPR) * 0.5);
+const subtitleY = yBase + 75; // Position it below the underline
+
+// Draw the text
+ctx.fillText(subtitleText, subtitleX, subtitleY);
+
+// Reset text alignment for other potential drawing operations
+ctx.textAlign = 'start';
+// --- End: Draw subtitle on canvas ---
+
+}
+
+// Helper function for linear interpolation
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// --- Interaction Logic ---
+let mouseTimer = null;
+canvas.addEventListener('mousemove', e => { if (mouseTimer) clearTimeout(mouseTimer); mouseTimer = setTimeout(() => handleMouse(e), 16); });
+canvas.addEventListener('mouseleave', () => { state.hover = null; scheduleExit(); });
+canvas.addEventListener('mouseenter', e => handleMouse(e));
+
+function getMousePos(evt) {
+const rect = canvas.getBoundingClientRect();
+const x = (evt.clientX - rect.left) * (canvas.width / rect.width) / DPR;
+const y = (evt.clientY - rect.top) * (canvas.height / rect.height) / DPR;
+return { x, y };
+}
+
+function handleMouse(evt) {
+const pos = getMousePos(evt);
+layoutDirty = true;
+computeLayout();
+let hit = null;
+for (let i = 0; i < wordBoxes.length; i++) {
+const b = wordBoxes[i];
+if (pos.x >= b.x && pos.x <= b.x + b.w && pos.y >= b.y && pos.y <= b.y + b.h) {
+hit = b.id; break;
+}
+}
+if (hit !== state.hover) {
+state.hover = hit;
+if (hit === 'discrete') triggerDiscrete();
+else if (hit === 'continuous') triggerContinuous();
+else scheduleExit();
+}
+}
+
+function scheduleExit() {
+state.mode = 'idle';
+animateProp('discreteSpacing', state.discreteSpacing, 0, 400);
+animateProp('wordGap', state.wordGap, 20, 400);
+animateProp('continuousLetterSpacing', state.continuousLetterSpacing, 0, 400);
+state.continuousWave = false;
+letters['discrete'].forEach(l => { l.font = 'ui'; l.weight = '600'; });
+letters['continuous'].forEach(l => { l.font = 'ui'; l.weight = '600'; });
+layoutDirty = true;
+}
+
+function triggerDiscrete() {
+if (state.mode === 'discrete') return;
+state.mode = 'discrete';
+state.continuousWave = false;
+letters['continuous'].forEach(l => { l.font = 'ui'; l.weight = '600'; });
+letters['discrete'].forEach(l => { l.font = 'mono'; l.weight = '700'; });
+animateProp('discreteSpacing', state.discreteSpacing, 8, 400);
+animateProp('wordGap', state.wordGap, 30, 400);
+animateProp('continuousLetterSpacing', state.continuousLetterSpacing, -2, 300);
+}
+
+function triggerContinuous() {
+if (state.mode === 'continuous') return;
+state.mode = 'continuous';
+ const instr = document.getElementById('instruction');
+    if (instr) {
+    instr.style.transition = 'opacity 1s ease';
+    instr.style.opacity = '0';   // fade out
+    // ❌ do not remove with instr.remove()
+}
+// Apply continuous effects immediately
+letters['continuous'].forEach(l => { l.font = 'continuous'; l.weight = '400'; });
+if (!state.underlinePlayed) {
+        state.continuousWave = true;
+        state.continuousWaveStart = state.time;
+        state.underlineVisible = true;
+        state.underlinePlayed = true;   // mark as done
+    }
+// Don't collapse discrete spacing immediately - let it happen   during the wave
+animateProp('wordGap', state.wordGap, 20, 400);
+animateProp('continuousLetterSpacing', state.continuousLetterSpacing, -2, 300);
+layoutDirty = true;
+}
+
+// Helper to animate a property over time
+function animateProp(prop, from, to, dur) {
+const start = performance.now();
+const end = start + dur;
+function step(now) {
+const t = Math.min(1, (now - start) / dur);
+const ease = 1 - Math.pow(1 - t, 3);
+if (prop === 'discreteSpacing') state.discreteSpacing = lerp(from, to, ease);
+if (prop === 'wordGap') state.wordGap = lerp(from, to, ease);
+if (prop === 'continuousLetterSpacing') state.continuousLetterSpacing = lerp(from, to, ease);
+layoutDirty = true;
+if (now < end) requestAnimationFrame(step);
+}
+requestAnimationFrame(step);
+}
+
+// --- Theme Selector Logic ---
+const themeMenu = document.getElementById('theme-menu');
+const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+themeToggleBtn.addEventListener('click', () => {
+themeMenu.classList.toggle('show');
+themeToggleBtn.classList.toggle('active');
+});
+
+document.querySelectorAll('.theme-menu .crumb').forEach(btn => {
+btn.addEventListener('click', () => {
+const theme = btn.getAttribute('data-theme');
+document.body.setAttribute('data-theme', theme);
+document.querySelectorAll('.theme-menu .crumb').forEach(b => b.setAttribute('aria-pressed','false'));
+btn.setAttribute('aria-pressed','true');
+themeMenu.classList.remove('show');
+themeToggleBtn.classList.remove('active');
+// Refresh MathJax rendering after theme change
+if (typeof MathJax !== 'undefined') {
+MathJax.typeset();
+}
+});
+});
+
+// Start the animation loop
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
