@@ -236,15 +236,15 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <p>Even small additive biases matter when time scales are small or when events aggregate. Examples across scales:</p>
 
 <ul>
-  <li><strong>Human-facing services (seconds):</strong> a $0.25$ s extra mean wait affects perceived responsiveness and conversion metrics.</li>
+  <li><strong>Human facing services (seconds):</strong> a $0.25$ s extra mean wait affects perceived responsiveness and conversion metrics.</li>
   <li><strong>Telemetry (ms–s):</strong> small biases accumulate in daily averages and can mislead anomaly detection.</li>
-  <li><strong>High-Frequency Trading a.k.a HFT (ms–µs):</strong> with \( \Delta = 1m s \), bias per event is \( 0.25m s \); across millions of events such shifts are economically meaningful.</li>
-  <li><strong>Real-time control (ms–µs):</strong> sample-time biases can erode stability margins or increase latency beyond acceptable control thresholds.</li>
+  <li><strong>High Frequency Trading a.k.a HFT (ms–µs):</strong> with \( \Delta = 1m s \), bias per event is \( 0.25m s \); across millions of events such shifts are economically meaningful.</li>
+  <li><strong>Real time control (ms–µs):</strong> sample-time biases can erode stability margins or increase latency beyond acceptable control thresholds.</li>
 </ul>
 <p><b>Note that:</b></p>
 <p>The algebraic bias we derived, \( \displaystyle \text{bias}=\frac{D\Delta}{2(D+U)} \) (simplifying to \( \Delta/4 \) when \(D=U\)), is immediately actionable. If arrivals occur at rate \( \lambda \) (Poisson), the extra waiting-work introduced per unit time is about \( \lambda\cdot(\Delta/4) \) — a compact expression linking event rate, timestamp granularity, and cumulative cost. Changing the server available time will change several aspects.</p>
 
-<p>So we get a, <b>Design rule of thumb</b>: compute the bias from \( \frac{D\Delta}{2(D+U)} \) (or \( \Delta/4 \) for symmetric case) and compare to your system's latency or control tolerances; if the bias is large relative to requirements, reduce \( \Delta \) or explicitly model discrete effects.</p>
+<p>So we get a, <b>rule of thumb for designing systems</b>: compute the bias from \( \frac{D\Delta}{2(D+U)} \) (or \( \Delta/4 \) for symmetric case) and compare to your system's latency or control tolerances; if the bias is large relative to requirements, reduce \( \Delta \) or explicitly model discrete effects.</p>
 
 <p>To put into perspective a \(1\ \mu\text{s}\) granularity adds \(0.25\ \mu\text{s}\) per event in HFT, and at \(10^6\) events/s aggregates to 0.25 s of waiting per second, which is a significant timescale in HFT. Thus the same small per-event constant can be negligible for web pages yet decisive in HFT, telemetry, or tight control loops.</p>
 <br>
@@ -257,25 +257,11 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 
 <p><strong>2) Queueing with bursty arrivals and finite service</strong> — Model using Geo/Geo/1 or $M/G/1$ approximations and study how discretization amplifies tail probabilities and affects stability. Keep cyclic schedule but let arrivals be Poisson(\( \lambda \)) or Bernoulli-per-slot with \( p\!\approx\!\lambda\Delta \). Expected backlog: \( \mathbb{E}[N_D]=\lambda D \). Stability requires \( \lambda D < \mu U \) where capacity \( C=\mu U \). Assess offered load via \( \lambda\big(\mathbb{E}[W]_{\text{cont}}+\text{bias}\big) \).</p>
 
-<p><strong>3) Multi-server / asynchronous duty cycles</strong> — Analyze interacting on/off servers with mean-field or fluid approximations to see when per-server discretization biases average out or persist. For \( n \) servers with staggered windows, compute system-level availability by convolving single-server distributions. As \( n \) grows, per-arrival bias tends to average down (heuristically ~\(1/n\) for well-mixed stagger).</p>
+<p><strong>3) Load on system</strong> — System would receive entry requests during downtime, creating a backlog.The backlog would be cleared at next uptime. Due to extra load, the sever can only process certain number of request, till the load is reduced. It can serve at a rate $\mu (t)$ (or capacity $C=\mu (t) U$ ). If $\lambda$, is the rate during $D$, then the stability condition (queue does not grow larger with time) is, $\lambda D=\mu U.$:</p>
 
-<h4>Assumptions and simplifications</h4>
-<ul>
-  <li>Cycles: downtime \( D \), uptime \( U \) repeating</li>
-  <li>Arrival process: Poisson rate \( \lambda \) or Bernoulli per slot approximating Poisson</li>
-  <li>Service capacity: during uptime serve at rate \( \mu \) (or capacity \( C = \mu U \))</li>
-  <li>Objective: approximate expected wait for random arrival and assess discretization impact</li>
-</ul>
-
-<p><b>Note that:</b><p>
-<p><strong>Step 1 — Expected arrivals during downtime:</strong> The expected backlog arriving during downtime sets workload to be cleared at next uptime. For Poisson arrivals: \( \mathbb{E}[N_D] = \lambda D \).</p>
-
-<p><strong>Step 2 — Service and clearing condition:</strong> If uptime service capacity exceeds expected backlog, most arrivals clear; otherwise queues persist and can grow. Stability condition (mean-based): \( \lambda D < \mu U \).</p>
-
-<p><strong>Step 3 — Discretization effect on queue:</strong> Discretizing time changes per-slot arrival counts (Bernoulli with \( p \approx \lambda \Delta \)), and each arrival's mean wait shifts by per-arrival bias; aggregate queuing behavior and tails can be amplified. Discrete expected arrivals per downtime: \( \mathbb{E}[N_D] \approx \lambda D \). Per-arrival additive bias (general): \( \frac{D\Delta}{2(D+U)} \).</p>
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
-<h2>Let's play around! a.k.a Simulations</h2>
+<h2>Simulations!</h2>
 <!-- ===================== Interactive Simulations ===================== -->
 <style>
   /* SIMS: clean, modern controls and canvas styling */
@@ -1088,6 +1074,7 @@ requestAnimationFrame(frame);
 
 </body>
 </html>
+
 
 
 
