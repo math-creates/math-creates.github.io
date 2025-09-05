@@ -224,7 +224,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <br>
 
 <h3>Step 5 â€” Riemann-sum intuition (why the correction appears)</h3>
-<p><b>At first this may be a bit different, but here lies the bridge with joins the discrete and continuous!</b></p>
+<p><b>At first this may be a bit different, but here lies the bridge which joins the discrete and continuous!</b></p>
 <p>The discrete sum acts as a <b>Riemann approximation to the integral</b> used in the continuous calculation. Rounding/endpoint choices introduce an \(O(\Delta)\) error: arrivals that miss an uptime boundary are bumped to the next slot, adding expected delay. For our triangular waiting function this leading error constant evaluates to the familiar quarter of a slot in the symmetric normalization.</p>
 <p class="math">$$\boxed{\displaystyle \frac{1}{T}\sum_{j=1}^{m_D} (j\Delta)\frac{\Delta}{T}\approx \frac{1}{T}\int_0^D (D-t)\,dt + O(\Delta) }$$</p>
 <p>The computed \(O(\Delta)\) term equals \(\Delta/4\) in the symmetric setting.</p>
@@ -1074,6 +1074,7 @@ requestAnimationFrame(frame);
 
 </body>
 </html>
+
 
 
 
