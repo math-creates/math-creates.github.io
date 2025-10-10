@@ -1,6 +1,4 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -212,6 +210,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <p class="math">$$\text{bias}=\frac{X\Delta}{4X}=\frac{\Delta}{4}$$
 <br>
 <h3>Example!</h3>
+<p><b>This literally opens <i>floodgates</i> to various notions.</b></p>
 <p>Let's take the <b>timescale</b> to be $1\text{ min}\equiv 60 \text{ seconds}$. $ U=D=30\text{ seconds}$. If logging granularity is \(\Delta=1\) s, the symmetric bias yields a numerical extra wait of:</p>
 <p class="math">$$\text{bias}=\frac{\Delta}{4}=0.25\ \text{s}.$$</p>
 <p>The continuous mean is \(X/4=7.5\) s, and the discrete mean becomes \(7.5+0.25=7.75\) s. Thus $1$ second granularity timing adds a <b>quarter-second</b> average wait in this example.</p>
@@ -1071,17 +1070,5 @@ MathJax.typeset();
 requestAnimationFrame(frame);
 })();
 </script>
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
