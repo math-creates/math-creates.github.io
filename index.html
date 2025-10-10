@@ -254,9 +254,9 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <p><strong>1) Randomized phase and jitter</strong> — Let cycle start vary randomly to model asynchronous systems; analyze by conditioning on phase and averaging. This typically reduces deterministic boundary bias. Replace fixed cycle start by random phase \( \phi \) with density \( p(\phi) \) on \([0,\Delta)\). Compute conditional bias \( b(\phi) \) and average:</p>
 <p class="math">$$ \displaystyle \text{bias}_{\text{avg}}=\int_0^{\Delta} b(\phi)\,p(\phi)\,d\phi $$</p></p>
 
-<p><strong>2) Queueing with bursty arrivals and finite service</strong> — Model using Geo/Geo/1 or $M/G/1$ approximations and study how discretization amplifies tail probabilities and affects stability. Keep cyclic schedule but let arrivals be Poisson(\( \lambda \)) or Bernoulli-per-slot with \( p\!\approx\!\lambda\Delta \). Expected backlog: \( \mathbb{E}[N_D]=\lambda D \). Stability requires \( \lambda D < \mu U \) where capacity \( C=\mu U \). Assess offered load via \( \lambda\big(\mathbb{E}[W]_{\text{cont}}+\text{bias}\big) \).</p>
+<p><strong>2) Queueing with bursty arrivals and finite service</strong> — Model <i>using some kind of approximations of real scenarios</i> and study how discretization amplifies (tail) probabilities and affects stability. Keep cyclic schedule but let arrivals be Poisson(\( \lambda \)) or Bernoulli-per-slot with \( p\!\approx\!\lambda\Delta \). Expected backlog: \( \mathbb{E}[N_D]=\lambda D \). Stability requires \( \lambda D < \mu U \) where capacity \( C=\mu U \). Assess offered load via \( \lambda\big(\mathbb{E}[W]_{\text{cont}}+\text{bias}\big) \).</p>
 
-<p><strong>3) Load on system</strong> — System would receive entry requests during downtime, creating a backlog.The backlog would be cleared at next uptime. Due to extra load, the server can only process certain number of request, till the load is reduced. It can serve at a rate $\mu (t)$ (or capacity $C=\mu (t) U$ ). If $\lambda$, is the rate during $D$, then the stability condition (queue does not grow larger with time) is, $\lambda D=\mu U.$:</p>
+<p><strong>3) Load on system</strong> — System would receive entry requests during downtime, creating a backlog.The backlog would be cleared at next uptime. Due to extra load, the server can only process certain number of request, till the load is reduced. It can serve at a rate $\mu (t)$ (or capacity $C=\mu (t) U$ ). If $\lambda$, is the rate during $D$, then the stability condition (queue does not grow larger with time) is, $\lambda D=\mu U.$</p>
 
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
@@ -1072,3 +1072,4 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+
