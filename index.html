@@ -248,7 +248,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <p>To put into perspective a \(1\ \mu\text{s}\) granularity adds \(0.25\ \mu\text{s}\) per event in HFT, and at \(10^6\) events/s aggregates to 0.25 s of waiting per second, which is a significant timescale in HFT. Thus the same small per-event constant can be negligible for web pages yet decisive in HFT, telemetry, or tight control loops.</p>
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
-<h2>Making the model realistic</h2>
+<h2>Making the model a bit more realistic</h2>
 <p>We can also try to add realistic upgrades so one can adopt them incrementally, as the situation demands .</p>
 
 <p><strong>1) Queueing with excess arrivals but finite service capacity</strong> â€” Model <i>using some kind of approximations of real scenarios</i> and study how it affects stability and probability of 'rare' events. We would keep cyclic schedule but would let arrivals be Poisson(\( \lambda \)) or Bernoulli per slot with \( p\!\approx\!\lambda\Delta \). The expected backlog would be: \( \mathbb{E}[N_D]=\lambda D \). While for stability the requirement is: \( \lambda D < \mu U \) (where capacity \( C=\mu U \), and $\mu$ is the rate). </p>
@@ -1069,5 +1069,6 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+
 
 
