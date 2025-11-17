@@ -230,15 +230,15 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
 <h2>Implications & Motivation</h2>
-<p>Small mathematical additives like the discretization bias \( \frac{D\Delta}{2(D+U)} \) need engineering judgment, as time scale sets the relevance:</p>
+<p>Small mathematical additives like the discretization bias \( \frac{D\Delta}{2(D+U)} \) needs engineering judgment, as time scale can set the relevance:</p>
 
 <p>Even small additive biases matter when time scales are small or when events aggregate. Examples across scales:</p>
 
 <ul>
-  <li><strong>Human facing services (seconds):</strong> a $0.25$ s extra mean wait affects perceived responsiveness and conversion metrics.</li>
-  <li><strong>Telemetry (ms–s):</strong> small biases accumulate in daily averages and can mislead anomaly detection.</li>
+  <li><strong>Human facing services (seconds):</strong> a $0.25$ s extra means wait <i>each time</i> affects perceived responsiveness and hence conversion metrics as persistance of human vision is $0.0625$, 4 times more than the expected time.</li>
+  <li><strong>Telemetry (ms–s):</strong> small biases accumulate in average and can mislead anomaly detection in complex systems, where there is high jitter and lag.</li>
   <li><strong>High Frequency Trading a.k.a HFT (ms–µs):</strong> with \( \Delta = 1m s \), bias per event is \( 0.25m s \); across millions of events such shifts are economically meaningful.</li>
-  <li><strong>Real time control (ms–µs):</strong> sample-time biases can erode stability margins or increase latency beyond acceptable control thresholds.</li>
+  <li><strong>Real time control loops(ms–µs):</strong> sample-time biases can erode stability margins or increase latency beyond acceptable control thresholds.</li>
 </ul>
 <p><b>Note that:</b></p>
 <p>The algebraic bias we derived, \( \displaystyle \text{bias}=\frac{D\Delta}{2(D+U)} \) (simplifying to \( \Delta/4 \) when \(D=U\)), is immediately actionable. If arrivals occur at rate \( \lambda \) (Poisson), the extra waiting-work introduced per unit time is about \( \lambda\cdot(\Delta/4) \) — a compact expression linking event rate, timestamp granularity, and cumulative cost. Changing the server available time will change several aspects.</p>
@@ -1069,6 +1069,7 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+
 
 
 
