@@ -187,10 +187,10 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <p>Let downtime be represented by $D$ and uptime be represented by $U$. Hence the cycle length $T=D+U$. </p>
 <h3>Part 1 — If time is modeled continuously</h3>
 <p>If arrival time is continuous, the user needs to wait, only when it happens to arrive during the downtime interval $\left[0, D\right)$ ; the wait equals the remaining downtime until $D$</p>
-<p>The expected wait under continuous arrivals is the average of $W(t)=D-t$ for $t\in \left[0, D\right)$,normalized by the cycle: </p>
+<p>The best way to treat this is to find the <i>average wait time</i> here. The expected wait under continuous arrivals is the average of $W(t)=D-t$ for $t\in \left[0, D\right)$,normalized by the cycle ($t$, is the time in which the user would be able to access the server): </p>
 <p class="math">$$\mathbb{E}[W]_{\text{continuous}}=\frac{1}{T} \int_{0}^{T}(D-t) dt$$</p>
-<p>Computing the integral to obtain the closed form:</p>
-<p class="math">$$\int_{0}^{T}(D-t) dt = \frac{1}{2}D^{2} \qquad \implies \qquad \boxed{\mathbb{E}[W]_{\text{continuous}}=\frac{D^{2}}{2(D+U)}}$$</p>
+<p>Computing the integral:</p>
+<p class="math">$$\boxed{\mathbb{E}[W]_{\text{continuous}}=\frac{D^{2}}{2(D+U)}}$$</p>
 <br>
 
 <h3>Part 2 — If time is modeled discretely</h3>
@@ -203,7 +203,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 
 <br>
 <h3>Step 3 — Isolate and interpret the bias</h3>
-<p><b>This is the most important step!</b> We now see that we get different results for continuous and discrete time, but now let's understand the <b>gravity of the situation</b>. Usually, when you pay for server uptime, it's up to the user to decide the all aspects of <b>uptime</b>, but to make our model more realistic and useful, let's assume we're only using the server half the time. So for simplicity, we'll just go with $50\text{%}$ of time.</p>
+<p><b>This is the most important step!</b> We now see that we get different results for continuous and discrete time, but now let's understand the <b>gravity of the situation</b>. Usually, when you pay for server uptime, it's up to the user to decide the all aspects of <b>uptime</b>, but to make our model more realistic and useful, let's assume we're only using the server half the time (Yeah, we are cost-cutting!). So for simplicity, we'll just go with $50\text{%}$ of time.</p>
 
 <p class="math">$$\boxed{\text{bias}=\mathbb{E}[W]_{\text{discrete}}-\mathbb{E}[W]_{\text{continuous}}=\frac{D\Delta}{2(D+U)}}$$</p>
 <p>As $D=U=X$:</p>
@@ -214,10 +214,11 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <p>Let's take the <b>timescale</b> to be $1\text{ min}\equiv 60 \text{ seconds}$. $ U=D=30\text{ seconds}$. If logging granularity is \(\Delta=1\) s, the symmetric bias yields a numerical extra wait of:</p>
 <p class="math">$$\text{bias}=\frac{\Delta}{4}=0.25\ \text{s}.$$</p>
 <p>The continuous mean is \(X/4=7.5\) s, and the discrete mean becomes \(7.5+0.25=7.75\) s. Thus $1$ second granularity timing adds a <b>quarter-second</b> average wait in this example.</p>
-
+<p><i>We will discuss it's real life implications ahead.</i></p>
+  
 <br>
 <h3>Step 4 — Isolate and interpret the bias</h3>
-<p>The discrete expectation equals the continuous expectation plus an additive correction proportional to $\Delta$, The general bias is:</p>
+<p>The discrete expectation equals the continuous expectation plus an additive correction proportional to $\Delta$. The general bias is:</p>
 <p class="math">$$\boxed{\text{bias}=\frac{D\Delta}{2(D+U)}}$$</p>
 <p>In practice, one should evaluate this against your latency budget: if the bias is a non-negligible fraction of your target latency,one needs refine timestamp resolution or account for the correction in design. Moreover the granularity and the server uptime changes the dynamics.</p>
 <br>
@@ -251,7 +252,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <h2>Making the model a bit more realistic</h2>
 <p>We can also try to add realistic upgrades so one can adopt them incrementally, as the situation demands .</p>
 
-<p><strong>1) Queueing with excess arrivals but finite service capacity</strong> — Model <i>using some kind of approximations of real scenarios</i> and study how it affects stability and probability of 'rare' events. We would keep cyclic schedule but would let arrivals be Poisson(\( \lambda \)) or Bernoulli per slot with \( p\!\approx\!\lambda\Delta \). The expected backlog would be: \( \mathbb{E}[N_D]=\lambda D \). While for stability the requirement is: \( \lambda D < \mu U \) (where capacity \( C=\mu U \), and $\mu$ is the rate). </p>
+<p><strong>1) Queueing with excess arrivals but finite service capacity</strong> — Model <i>using some kind of approximations of real scenarios</i> and study how it affects stability and probability of 'rare and crowded' events. We would keep cyclic schedule but would let arrivals be Poisson(\( \lambda \)) or Bernoulli per slot with \( p\!\approx\!\lambda\Delta \). The expected backlog would be: \( \mathbb{E}[N_D]=\lambda D \). While for stability the requirement is: \( \lambda D < \mu U \) (where capacity \( C=\mu U \), and $\mu$ is the rate). </p>
 
 <p><strong>2) Calculating the load on system</strong> — System would receive entry requests during downtime, creating a backlog.The backlog would be cleared at next uptime. Due to extra load, the server can only process certain number of request, till the load is reduced. It can serve at a rate $\mu (t)$ (or capacity $C=\mu (t) U$ ). If $\lambda$, is the rate during $D$, then the stability condition (queue does not grow larger with time) is, $\lambda D=\mu U.$</p>
 
@@ -281,7 +282,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <div class="sim-section" id="sim-hero">
   <div class="sim-header">
     <div>
-      <h3 style="margin:0">discrete vs continuous</h3>
+      <h3 style="margin:0">Discrete v/s Continuous</h3>
       <p style="margin:6px 0 0;" class="small">See arrivals (dots) on a single cycle bar (downtime → uptime). Toggle discrete/continuous and tune <em>D</em>, <em>&Delta;</em>. Theoretical and empirical means update live. Math: continuous \(E[W]=\frac{D^2}{2(D+U)}\), discrete bias \(=\frac{D\Delta}{2(D+U)}\).</p>
     </div>
     <div class="legend">
@@ -667,7 +668,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking �
 <br>
 <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
 <h2>Conclusion</h2>
-<p>So, while the dance between the discrete and the continuous shapes everything from math to the world around us, it’s not about choosing one over the other, it’s about appreciating the unique strengths each brings to the table. The next time you weigh an apple after counting it, or stream a song built from a million digital bits, remember: it’s this beautiful tension that helps us piece together a clearer, richer story of how things work.
+<p>So, while the play between the discrete and the continuous shapes everything from math to the world around us, it’s not about choosing one over the other, it’s about appreciating the unique strengths each brings to the table. The next time you weigh an apple after counting it, or stream a song built from a million digital bits, remember: it’s this beautiful tension that helps us piece together a clearer, richer story of how things work.
 And thank you for reading this far. I hope it wasn’t too much of a <b>continuous</b> effort, and that you found a <b>discrete</b> moment of enjoyment in it.</p>
 
 
@@ -1069,6 +1070,7 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+
 
 
 
