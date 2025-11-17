@@ -186,7 +186,7 @@ In fact, I believe, this tension is not a bug but a design feature of thinking â
 <h3>Mathematical Set-Up</h3>
 <p>Let downtime be represented by $D$ and uptime be represented by $U$. Hence the cycle length $T=D+U$. </p>
 <h3>Part 1 â€” If time is modeled continuously</h3>
-<p>If arrival time is continuous, the only waiting happens when arrival falls in the downtime interval $\left[0, D\right)$ ; the wait equals the remaining downtime until $D$</p>
+<p>If arrival time is continuous, the user needs to wait, only when it happens to arrive during the downtime interval $\left[0, D\right)$ ; the wait equals the remaining downtime until $D$</p>
 <p>The expected wait under continuous arrivals is the average of $W(t)=D-t$ for $t\in \left[0, D\right)$,normalized by the cycle: </p>
 <p class="math">$$\mathbb{E}[W]_{\text{continuous}}=\frac{1}{T} \int_{0}^{T}(D-t) dt$$</p>
 <p>Computing the integral to obtain the closed form:</p>
@@ -1069,6 +1069,7 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+
 
 
 
